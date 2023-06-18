@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:8.0.33
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      - MYSQL_DATABASE = 'e-commerce'
+      - MYSQL_USER= 'root'
+      - MYSQL_ROOT_PASSWORD= '0000'
+      - MYSQL_PASSWORD= '0000'
+      - MYSQL_HOST= '127.0.0.1'
+
+    volumes:
+        - '/tmp/app/mysqld:/var/run/mysqld'
+        - './db:/var/lib/mysql'
+
+  web:
+    build: .
+    command: python manage.py runserver
+    ports:
+      - "8000:8000"
+    volumes:
+      - '.:/base_directory'
+      - '/tmp/app/mysqld:/run/mysqld'
+    depends_on:
+      - db
+volumes:
+  db:
+  .:
