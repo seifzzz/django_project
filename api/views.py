@@ -8,11 +8,11 @@ from .serializers import (
     RegisterSerializer, UserSerializer,
     ProductSerializer, CartSerializer,
     CartItemSerializer,
-    OrderSerializer
+    OrderSerializer,
     )
 
 
-# Register API
+# Register API to create user
 class RegisterApi(generics.GenericAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
@@ -23,15 +23,20 @@ class RegisterApi(generics.GenericAPIView):
         user = serializer.save()
 
         Cart.objects.create(user=user, total_price=0.0, quantity=0)
-        return Response({
-                "user": UserSerializer(user,
-                                       context=self.
-                                       get_serializer_context()).data,
+        return Response(
+            {
+                "user": UserSerializer(
+                    user,
+                    context=self.
+                    get_serializer_context()
+                    ).data,
                 "message": "User Created Successfully.  "
                            "Now perform Login to get your token",
-                        })
+                }
+            )
 
 
+# Add Product API to add product to system
 class Add_Product(generics.GenericAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
@@ -51,6 +56,7 @@ class Add_Product(generics.GenericAPIView):
                 )
 
 
+# API to get all products
 class All_Product(generics.GenericAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
@@ -59,28 +65,40 @@ class All_Product(generics.GenericAPIView):
         if name:
             item = Product.objects.filter(name=name)
             if len(item) == 0:
-                return Response({"status": "success",
-                                 "Message":
-                                     "there is no product with this name "},
-                                status=status.HTTP_200_OK)
+                return Response(
+                    {
+                        "status": "success",
+                        "Message":
+                            "there is no product with this name "
+                        },
+                    status=status.HTTP_200_OK
+                    )
 
             serializer = ProductSerializer(item[0])
-            return Response({"status": "success", "data": serializer.data},
-                            status=status.HTTP_200_OK)
+            return Response(
+                {"status": "success", "data": serializer.data},
+                status=status.HTTP_200_OK
+                )
 
         items = Product.objects.all().order_by('price')
 
         if len(items) == 0:
             return Response(
-                {"status": "success",
-                 "Message": "there no available products"},
-                status=status.HTTP_200_OK)
+                {
+                    "status": "success",
+                    "Message": "there no available products"
+                    },
+                status=status.HTTP_200_OK
+                )
 
         serializer = ProductSerializer(items, many=True)
-        return Response({"status": "success", "data": serializer.data},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {"status": "success", "data": serializer.data},
+            status=status.HTTP_200_OK
+            )
 
 
+# to update total price and quantity for cart when user adding another items
 def update_quantity_price(cart, cart_items):
     len_items = len(cart_items)
     quantity = 0
@@ -96,6 +114,7 @@ def update_quantity_price(cart, cart_items):
     cart.quantity = quantity
 
 
+# API to show all cart items
 class Show_Cart(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [authentication.JWTAuthentication]
@@ -107,18 +126,27 @@ class Show_Cart(generics.GenericAPIView):
         items = Cart_items.objects.filter(cart_id=cart[0].id)
 
         if len(items) == 0:
-            return Response({"status": "success",
-                             "Message": "Your Cart is empty"},
-                            status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "status": "success",
+                    "Message": "Your Cart is empty"
+                    },
+                status=status.HTTP_200_OK
+                )
 
         serializer = CartSerializer(cart, many=True)
         serializer2 = CartItemSerializer(items, many=True)
 
-        return Response({"status": "success", "Cart": serializer.data,
-                        "Cart item ": serializer2.data},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {
+                "status": "success", "Cart": serializer.data,
+                "Cart item ": serializer2.data
+                },
+            status=status.HTTP_200_OK
+            )
 
 
+# API to add items to cart
 class Add_item_Cart(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [authentication.JWTAuthentication]
@@ -137,14 +165,21 @@ class Add_item_Cart(generics.GenericAPIView):
 
             cart.save()
 
-            return Response({"status": "success",
-                             "Message": "Item added to cart"},
-                            status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "status": "success",
+                    "Message": "Item added to cart"
+                    },
+                status=status.HTTP_200_OK
+                )
         else:
-            return Response({"status": "error", "data": serializer.errors},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "error", "data": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
 
+# API to get all orders for user
 class OrderApi(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [authentication.JWTAuthentication]
@@ -161,12 +196,14 @@ class OrderApi(generics.GenericAPIView):
                 )
         serializer = OrderSerializer(order1, many=True)
 
-        return Response({"status": "success", "Order": serializer.data},
-                        status=status.HTTP_200_OK)
+        return Response(
+            {"status": "success", "Order": serializer.data},
+            status=status.HTTP_200_OK
+            )
 
 
+# API to make order
 class Make_OrderApi(generics.GenericAPIView):
-
     permission_classes = (IsAuthenticated,)
     authentication_classes = [authentication.JWTAuthentication]
     serializer_class = OrderSerializer

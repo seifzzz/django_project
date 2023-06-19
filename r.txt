@@ -16,6 +16,7 @@ idna==3.4
 inflection==0.5.1
 jsonschema==4.17.3
 mccabe==0.7.0
+mod-wsgi==4.9.4
 mysqlclient==2.1.1
 packaging==23.1
 pipreqs==0.4.13
